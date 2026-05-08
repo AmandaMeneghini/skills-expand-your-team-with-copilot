@@ -61,7 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function initializeTheme() {
-    const savedTheme = localStorage.getItem(themeStorageKey);
+    const savedTheme = localStorage.getItem(themeStorageKey) || "light";
+    localStorage.setItem(themeStorageKey, savedTheme);
     applyTheme(savedTheme);
   }
 
