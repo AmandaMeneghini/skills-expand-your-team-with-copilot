@@ -308,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Fallback to the string format if schedule_details isn't available
-    return details.schedule || "Schedule to be announced";
+    return details.schedule || "Schedule coming soon";
   }
 
   function buildActivityShareUrl(activityName) {
@@ -641,7 +641,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="share-actions">
         <span class="share-actions-label">Share with friends:</span>
         ${nativeShareButton}
-        <button type="button" class="share-button" data-share-action="email" aria-label="Email ${name}">
+        <button type="button" class="share-button" data-share-action="email" aria-label="Email link for ${name}">
           Email
         </button>
         <button type="button" class="share-button" data-share-action="copy" aria-label="Copy a link for ${name}">
