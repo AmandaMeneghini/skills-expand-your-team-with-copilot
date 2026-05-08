@@ -387,6 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     if (sharedCard) {
+      sharedCard.classList.add("shared-activity");
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       ).matches;
@@ -630,7 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const nativeShareButton = navigator.share
       ? `
-          <button type="button" class="share-button" data-share-action="native" aria-label="Share ${name}">
+          <button type="button" class="share-button" data-share-action="native" aria-label="Share ${name} activity">
             Share
           </button>
         `
