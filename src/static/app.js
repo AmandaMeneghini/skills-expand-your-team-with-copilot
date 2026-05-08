@@ -337,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const helperInput = document.createElement("input");
     helperInput.value = text;
     helperInput.setAttribute("readonly", "");
+    helperInput.setAttribute("aria-hidden", "true");
     helperInput.style.position = "absolute";
     helperInput.style.left = "-9999px";
     document.body.appendChild(helperInput);
@@ -355,7 +356,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (action === "email") {
       const emailSubject = encodeURIComponent(`Check out ${activityName}`);
-      const emailBody = encodeURIComponent(`${shareText}\n\n${shareUrl}`);
+      const emailBodyText = [shareText, shareUrl].join("\n\n");
+      const emailBody = encodeURIComponent(emailBodyText);
       window.location.href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
       return;
     }
@@ -385,8 +387,15 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     if (sharedCard) {
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
       requestAnimationFrame(() => {
-        sharedCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        sharedCard.scrollIntoView({
+          behavior: prefersReducedMotion ? "auto" : "smooth",
+          block: "center",
+        });
       });
     }
   }
