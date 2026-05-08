@@ -361,6 +361,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function escapeHtml(text) {
+    if (typeof text !== "string") {
+      return "";
+    }
+
     const escapedCharacters = {
       "&": "&amp;",
       "<": "&lt;",
