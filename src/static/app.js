@@ -308,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Fallback to the string format if schedule_details isn't available
-    return details.schedule || "Schedule coming soon";
+    return details.schedule || "";
   }
 
   function buildActivityShareUrl(activityName) {
@@ -324,7 +324,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return {
       shareUrl,
       shareTitle: `${activityName} at Mergington High School`,
-      shareText: `Check out ${activityName} at Mergington High School. Schedule: ${schedule}.`,
+      shareText: schedule
+        ? `Check out ${activityName} at Mergington High School. Schedule: ${schedule}.`
+        : `Check out ${activityName} at Mergington High School.`,
     };
   }
 
@@ -608,6 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Format the schedule using the new helper function
     const formattedSchedule = formatSchedule(details);
+    const scheduleDisplayText = formattedSchedule || "Times will be posted later";
 
     // Create activity tag
     const tagHtml = `
@@ -659,7 +662,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <h4>${name}</h4>
       <p>${details.description}</p>
       <p class="tooltip">
-        <strong>Schedule:</strong> ${formattedSchedule}
+        <strong>Schedule:</strong> ${scheduleDisplayText}
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
