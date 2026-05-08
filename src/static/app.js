@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // State for activities and filters
   let allActivities = {};
   let currentFilter = "all";
-  let currentDifficulty = "all";
+  let currentDifficulty = "all-levels";
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
@@ -443,7 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const activityType = getActivityType(name, details.description);
       const activityDifficulty = details.difficulty
         ? details.difficulty.toLowerCase()
-        : "all";
+        : "all-levels";
 
       // Apply category filter
       if (currentFilter !== "all" && activityType !== currentFilter) {
