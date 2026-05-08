@@ -34,11 +34,12 @@ document.addEventListener("DOMContentLoaded", () => {
     community: { label: "Community", color: "#fff3e0", textColor: "#e65100" },
     technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab" },
   };
+  const allLevelsDifficulty = "all-levels";
 
   // State for activities and filters
   let allActivities = {};
   let currentFilter = "all";
-  let currentDifficulty = "all-levels";
+  let currentDifficulty = allLevelsDifficulty;
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
@@ -443,7 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const activityType = getActivityType(name, details.description);
       const activityDifficulty = details.difficulty
         ? details.difficulty.toLowerCase()
-        : "all-levels";
+        : allLevelsDifficulty;
 
       // Apply category filter
       if (currentFilter !== "all" && activityType !== currentFilter) {
