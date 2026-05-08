@@ -327,6 +327,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.schedule;
   }
 
+  function escapeHtml(text) {
+    const escapedCharacters = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+
+    return text.replace(/[&<>"']/g, (character) => escapedCharacters[character]);
+  }
+
   // Function to determine activity type (this would ideally come from backend)
   function getActivityType(activityName, description) {
     const name = activityName.toLowerCase();
@@ -553,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     const difficultyHtml = details.difficulty
-      ? `<p><strong>Difficulty:</strong> ${details.difficulty}</p>`
+      ? `<p><strong>Difficulty:</strong> ${escapeHtml(details.difficulty)}</p>`
       : "";
 
     activityCard.innerHTML = `
