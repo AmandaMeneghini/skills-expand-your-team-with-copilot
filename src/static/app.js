@@ -452,6 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Apply difficulty filter
+      // "All Levels" is the bucket for activities with no explicit difficulty.
       if (activityDifficulty !== currentDifficulty) {
         return;
       }

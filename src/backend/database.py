@@ -25,6 +25,8 @@ def init_database():
         for name, details in initial_activities.items():
             activities_collection.insert_one({"_id": name, **details})
     else:
+        # Only backfill activities with an explicit difficulty. Activities that
+        # omit the field are intentionally left unset so they remain "all levels".
         for name, details in initial_activities.items():
             if "difficulty" in details:
                 activities_collection.update_one(
