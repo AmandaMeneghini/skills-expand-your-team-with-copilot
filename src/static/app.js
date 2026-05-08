@@ -40,6 +40,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let searchQuery = "";
   let currentDay = "";
   let currentTimeRange = "";
+  const sharedActivityName = new URLSearchParams(window.location.search).get(
+    "activity"
+  );
 
   // Authentication state
   let currentUser = null;
@@ -286,6 +289,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Convert 24h time format to 12h AM/PM format for display
       const formatTime = (time24) => {
+        if (!time24) {
+          return "";
+        }
+
         const [hours, minutes] = time24.split(":").map((num) => parseInt(num));
         const period = hours >= 12 ? "PM" : "AM";
         const displayHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
@@ -297,11 +304,91 @@ document.addEventListener("DOMContentLoaded", () => {
       const startTime = formatTime(details.schedule_details.start_time);
       const endTime = formatTime(details.schedule_details.end_time);
 
-      return `${days}, ${startTime} - ${endTime}`;
+      return endTime ? `${days}, ${startTime} - ${endTime}` : `${days}, ${startTime}`;
     }
 
     // Fallback to the string format if schedule_details isn't available
-    return details.schedule;
+    return details.schedule || "Schedule to be announced";
+  }
+
+  function buildActivityShareUrl(activityName) {
+    const shareUrl = new URL(window.location.href);
+    shareUrl.searchParams.set("activity", activityName);
+    return shareUrl.toString();
+  }
+
+  function buildActivityShareDetails(activityName, details) {
+    const shareUrl = buildActivityShareUrl(activityName);
+    const schedule = formatSchedule(details);
+
+    return {
+      shareUrl,
+      shareTitle: `${activityName} at Mergington High School`,
+      shareText: `Check out ${activityName} at Mergington High School. Schedule: ${schedule}.`,
+    };
+  }
+
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    const helperInput = document.createElement("input");
+    helperInput.value = text;
+    helperInput.setAttribute("readonly", "");
+    helperInput.style.position = "absolute";
+    helperInput.style.left = "-9999px";
+    document.body.appendChild(helperInput);
+    helperInput.select();
+
+    const copied = document.execCommand("copy");
+    document.body.removeChild(helperInput);
+    return copied;
+  }
+
+  async function shareActivity(activityName, details, action) {
+    const { shareUrl, shareTitle, shareText } = buildActivityShareDetails(
+      activityName,
+      details
+    );
+
+    if (action === "email") {
+      const emailSubject = encodeURIComponent(`Check out ${activityName}`);
+      const emailBody = encodeURIComponent(`${shareText}\n\n${shareUrl}`);
+      window.location.href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+      return;
+    }
+
+    if (action === "native" && navigator.share) {
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl,
+      });
+      return;
+    }
+
+    const copied = await copyTextToClipboard(shareUrl);
+    if (!copied) {
+      throw new Error("Copy failed");
+    }
+  }
+
+  function highlightSharedActivityCard() {
+    if (!sharedActivityName) {
+      return;
+    }
+
+    const sharedCard = document.querySelector(
+      `[data-activity-name="${sharedActivityName}"]`
+    );
+
+    if (sharedCard) {
+      requestAnimationFrame(() => {
+        sharedCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
   }
 
   // Function to determine activity type (this would ideally come from backend)
@@ -467,15 +554,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Display filtered activities
-    Object.entries(filteredActivities).forEach(([name, details]) => {
+    const activityEntries = Object.entries(filteredActivities);
+    const sharedActivityIndex = activityEntries.findIndex(
+      ([name]) => name === sharedActivityName
+    );
+
+    if (sharedActivityIndex > 0) {
+      const [sharedActivity] = activityEntries.splice(sharedActivityIndex, 1);
+      activityEntries.unshift(sharedActivity);
+    }
+
+    activityEntries.forEach(([name, details]) => {
       renderActivityCard(name, details);
     });
+
+    highlightSharedActivityCard();
   }
 
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
     activityCard.className = "activity-card";
+    activityCard.dataset.activityName = name;
 
     // Calculate spots and capacity
     const totalSpots = details.max_participants;
@@ -519,6 +619,31 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
+    const nativeShareButton = navigator.share
+      ? `
+          <button type="button" class="share-button" data-share-action="native" aria-label="Share ${name}">
+            Share
+          </button>
+        `
+      : "";
+
+    const shareControls = `
+      <div class="share-actions">
+        <span class="share-actions-label">Share with friends:</span>
+        ${nativeShareButton}
+        <button type="button" class="share-button" data-share-action="email" aria-label="Email ${name}">
+          Email
+        </button>
+        <button type="button" class="share-button" data-share-action="copy" aria-label="Copy a link for ${name}">
+          Copy Link
+        </button>
+      </div>
+    `;
+
+    if (name === sharedActivityName) {
+      activityCard.classList.add("shared-activity");
+    }
+
     activityCard.innerHTML = `
       ${tagHtml}
       <h4>${name}</h4>
@@ -528,6 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="tooltip-text">Regular meetings at this time throughout the semester</span>
       </p>
       ${capacityIndicator}
+      ${shareControls}
       <div class="participants-list">
         <h5>Current Participants:</h5>
         <ul>
@@ -586,6 +712,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        try {
+          await shareActivity(name, details, button.dataset.shareAction);
+          if (button.dataset.shareAction !== "email") {
+            showMessage(`Share link ready for ${name}.`, "success");
+          }
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            console.error("Error sharing activity:", error);
+            showMessage("We could not share this activity right now.", "error");
+          }
+        }
+      });
+    });
 
     activitiesList.appendChild(activityCard);
   }
