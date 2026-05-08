@@ -653,10 +653,6 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
-    if (name === sharedActivityName) {
-      activityCard.classList.add("shared-activity");
-    }
-
     activityCard.innerHTML = `
       ${tagHtml}
       <h4>${name}</h4>
